@@ -1,18 +1,30 @@
 'use client'
 
+import { login } from '@/lib/api/auth'
 import Image from 'next/image'
 import Link from 'next/link';
-import PasswordInput from "./PasswordInput";
-import EmailInput from "./EmailInput";
+import PasswordInput from "../../components/PasswordInput";
+import EmailInput from "../../components/EmailInput";
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage(){
+    const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
-    const handleSubmit = function(){
-        console.log(email, password)
-    }
+    const handleSubmit = async (e: React.FormEvent) =>{
+        e.preventDefault();
+
+        try {
+            const result = await login(email, password);
+            localStorage.setItem('token', result.token);
+            router.push('/dashboard');
+        } catch (err: any) {
+            setError(err.message);
+        }
+    };
     return(
         <main className='flex flex-col-reverse lg:flex lg:flex-row h-screen '>
             <div className='flex-1 flex flex-col items-center justify-center lg:p-4 align-middle'>
@@ -32,11 +44,11 @@ export default function LoginPage(){
                         onChange={e => setPassword(e.target.value)} 
                     />
                     <div className='flex flex-col items-center lg:justify-end lg:items-end'>
-                        <a 
-                            href="#"
+                        <Link
+                            href="/forgotpassword"
                             className='font-semibold transition hover:text-[#82203C]'>
                         Esqueceu sua senha?
-                        </a>
+                        </Link>
                         <button 
                             type="submit"
                             className='bg-[#1E1E1E] transition hover:bg-[#82203C]
@@ -44,12 +56,13 @@ export default function LoginPage(){
                                 mt-12 font-bold cursor-pointer'>
                             LOGIN
                         </button>
+                        {error && <p>{error}</p>}
                     </div>
                 </form>
                 <p className='mt-2'>Não tem conta?
-                    <a href="#" className='font-bold hover:text-[#82203C]'>
+                    <Link href="/register" className='font-bold hover:text-[#82203C] ml-0.5'>
                         Cadastre-se agora!
-                    </a>
+                    </Link>
                 </p>
             </div>
             <div className='bg-[#1E1E1E] lg:m-[10px] lg:rounded-4xl lg:flex-1 flex flex-col items-center justify-center p-8 lg:p-4 align-middle'>

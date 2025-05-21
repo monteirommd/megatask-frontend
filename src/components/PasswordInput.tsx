@@ -1,14 +1,14 @@
 'use client'
 
 import { useState } from 'react';
-import { Eye, EyeSlash } from '@phosphor-icons/react';
+import { EyeIcon, EyeSlashIcon } from '@phosphor-icons/react';
 
-export default function PasswordInput({ value, onChange }: { value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }){
+export default function PasswordInput({ value, onChange, title = "Senha:" }: { value: string, title?: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }){
     const [showPassword, setShowPassword] = useState(false);
 
     return(
          <div className='relative w-full max-w-3xl mb-2'>
-            <label htmlFor="password" className="block mb-1 font-semibold">Senha:</label>
+            <label htmlFor="password" className="block mb-1 font-semibold">{title}</label>
             <input 
                 id="password"
                 name="password"
@@ -24,7 +24,7 @@ export default function PasswordInput({ value, onChange }: { value: string, onCh
                 className='absolute right-3 top-2/3 -translate-y-1/2 text-gray-500 hover:text-gray-800'
 
             >
-                {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeSlashIcon size={20} /> : <EyeIcon size={20} />}
             </button>
         </div>
     );

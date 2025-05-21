@@ -1,3 +1,4 @@
+
 export default function EmailInput({ value, onChange }: { value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void }){
     return(
         <div className='relative w-full max-w-3xl mb-4'>
