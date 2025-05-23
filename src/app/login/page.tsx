@@ -1,12 +1,12 @@
 'use client'
 
 import { login } from '@/lib/api/auth'
-import Image from 'next/image'
 import Link from 'next/link';
-import PasswordInput from "../../components/PasswordInput";
-import EmailInput from "../../components/EmailInput";
+import PasswordInput from "../../components/login/PasswordInput";
+import EmailInput from "../../components/login/EmailInput";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import LogoContent from '@/components/login/LogoContent';
 
 export default function LoginPage(){
     const router = useRouter();
@@ -20,7 +20,7 @@ export default function LoginPage(){
         try {
             const result = await login(email, password);
             localStorage.setItem('token', result.token);
-            router.push('/dashboard');
+            router.push(`/dashboard?email=${encodeURIComponent(email)}`);
         } catch (err: any) {
             setError(err.message);
         }
@@ -65,22 +65,9 @@ export default function LoginPage(){
                     </Link>
                 </p>
             </div>
-            <div className='bg-[#1E1E1E] lg:m-[10px] lg:rounded-4xl lg:flex-1 flex flex-col items-center justify-center p-8 lg:p-4 align-middle'>
-                <div className='flex lg:flex-col justify-center items-center align-middle gap-x-4'>
-                    <Image
-                        src="/favicon.svg"
-                        alt="Logo Mega Task"
-                        width={50}
-                        height={50}
-                        className='bg-clip-content lg:w-3xs'
-                        priority
-                    />
-                    <h1 
-                        className='text-white font-bold text-center text-2xl lg:text-5xl lg:mt-4'>
-                        Mega Task
-                    </h1>
-                </div>
-            </div>
+            <LogoContent 
+                key="component-persist"  
+            />
         </main>
     );
 }

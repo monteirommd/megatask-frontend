@@ -1,8 +1,5 @@
-
 import '../styles/globals.css'
 import type { Metadata } from 'next'
-
-
 
 export const metadata: Metadata = {
   title: 'Mega Task | To-Do List',
@@ -15,8 +12,6 @@ export const metadata: Metadata = {
 export default function RootLayout( { children }: { children: React.ReactNode } ) {
   return (
     <html lang="pt-br">
-      <head>
-      </head>
       <body>
         {children}
       </body>

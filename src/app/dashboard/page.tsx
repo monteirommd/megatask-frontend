@@ -1,19 +1,52 @@
 'use client'
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
+const defaultListId = 'today';
 
-export default function TodoDashboard(){
+export default function DashboardRedirectPage(){
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
-            router.push('/login');
+            router.replace('/login');
+            return;
         }
-    }, []);
-    return(
-        <h1>Dashboard</h1>
+
+        setIsCheckingAuth(false);
+
+        const emailParam = searchParams.get('email');
+
+        let redirectToPath = `/dashboard/${defaultListId}`;
+
+        if(emailParam) {
+            const query = new URLSearchParams();
+            query.set('email', emailParam);
+            redirectToPath += `?${query.toString()}`
+        }
+
+        router.replace(redirectToPath);
+    }, [router, searchParams]);
+    
+    if (isCheckingAuth) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-gray-100">
+                <p className="text-lg text-gray-700 animate-pulse">Verificando acesso...</p>
+            </div>
+        );
+    }
+
+    // Este conteúdo será mostrado muito brevemente (ou nem isso)
+    // antes do segundo redirecionamento (para a lista padrão) ocorrer.
+    return (
+        <div className="flex items-center justify-center h-screen bg-gray-100">
+            <p className="text-lg text-gray-700 animate-pulse">Redirecionando para seu painel...</p>
+        </div>
     );
+
 }
+
