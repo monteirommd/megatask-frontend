@@ -1,26 +1,28 @@
 'use client'
 
-import { iconMap } from '@/lib/icons';
-import ModalLogout from '@/components/ModalLogout';
-import { PlusCircleIcon, PowerIcon } from '@phosphor-icons/react';
+import { useState } from 'react'
+import { PlusCircleIcon, PowerIcon, DotsThreeVerticalIcon, SunIcon, PencilSimpleIcon, TrashIcon } from '@phosphor-icons/react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link'
+import { v4 as uuidv4 } from 'uuid' 
 import Image from 'next/image';
 import { ListItem } from '@/types';
-import { usePathname, useSearchParams, useRouter } from 'next/navigation';
-import { useState } from 'react'
-import { v4 as uuidv4 } from 'uuid'
+import { EditListModal } from '@/components/modals/EditListModal'
+import { LogoutModal } from '@/components/modals/LogoutModal';
 
 interface SidebarProps {
     lists: ListItem[];
 }
 
 export default function SidebarTaskList({ lists }: SidebarProps){
-    const router = useRouter()
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const currentEmail = searchParams.get('email');
+    
+    const [modal, setModal] = useState<{
+        type: 'edit' | 'logout' | null;
+        listId?: string;
+    }>( { type: null })
 
     const [localLists, setLocalLists] = useState<ListItem[]>(lists);
     const [newListName, setNewListName] = useState('');
@@ -34,6 +36,7 @@ export default function SidebarTaskList({ lists }: SidebarProps){
         return href;
     }
 
+    const isActive = (path: string) => pathname === path;
 
     const handleCreateList = () => {
         if (!newListName.trim()) return;
@@ -49,67 +52,69 @@ export default function SidebarTaskList({ lists }: SidebarProps){
         setIsAdding(false)
     }
 
+    const handleEditListName = (id: string, newName: string) => {
+        setLocalLists(prev => prev.map(list => (list.id === id ? { ...list, name: newName } : list)));
+    };
+
+    const handleDeleteList = (id: string) => {
+        setLocalLists(prev => prev.filter(list => list.id !== id));
+    };
+
+    const linkBaseRouter = 'flex items-center px-3 py-2 text-sm gap-2 transition-colors duration-150 ease-in-out rounded-2xl'
+    const hoverRouter = 'hover:bg-[#434242]'
+    const activeRouter = 'bg-[#82203C]'
+
     return(
         <aside className='w-2xs h-screen flex flex-col justify-around bg-[#1E1E1E]'>
             <nav className='text-white p-8 gap-y-3 justify-baseline'>
                 <ul>
-                    {localLists.map((list) => {
-                        const isActive = pathname === `/dashboard/${list.id}`;
-                        const IconComponent = iconMap[list.icon];
-
-                        return (
-                        <li key={list.id} className='mb-2'>
-                            <Link
-                                href={createLink(list.id)}
-                                className={`
-                                    flex items-center px-3 py-2 text-sm
-                                    transition-colors duration-150 ease-in-out
-                                    ${isActive
-                                        ? 'bg-[#82203C] font-semibold rounded-2xl'
-                                        : 'bg-transparent hover:bg-[#434242] font-medium rounded-2xl'
-                                    }
-                                    `}
-                            >
-                                {IconComponent && (
-                                    <IconComponent
-                                        size={20}
-                                        className='mr-2'
-                                    />
-                                )}
-                                {list.name}
-                            </Link>
-                        </li>
-                        );
-                    })}
-                </ul>
-
-                <div className='mt-6'>
+                    <Link
+                        href={`/dashboard/today`}
+                        className={`${linkBaseRouter} ${isActive('/dashboard/today') ? activeRouter : hoverRouter}`}
+                    >
+                        <SunIcon size={24} weight='bold'/>
+                        <h2 className='font-bold text-xl'>Hoje</h2>
+                    </Link>
+                    
+                    <div className='mt-6'>
                     {isAdding ? (
                         <div className='flex flex-col gap-2'>
-                            <input 
-                                type="text" 
-                                className='bg-[#3C3C3C] py-1 px-3 text-white rounded-xl text-sm'
-                                placeholder='Nome da nova lista'
-                                value={newListName}
-                                onChange={(e) => setNewListName(e.target.value)}
-                            />
-                            <div className='flex justify-around'>
-                                <button
-                                    onClick={handleCreateList}
-                                    className='cursor-pointer text-sm transition-colors duration-150 ease-in-out hover:bg-[#82203C] rounded-xl py-1 px-4'
-                                >
-                                    Criar
-                                </button>
-                                <button
-                                    className='cursor-pointer text-sm transition-colors duration-150 ease-in-out hover:bg-[#82203C] rounded-xl py-1 px-4'
-                                    onClick={() => {
-                                        setIsAdding(false);
-                                        setNewListName('');
-                                    }}
-                                >
-                                    Cancelar
-                                </button>
-                            </div>
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    handleCreateList();
+                                }}
+                                className='flex flex-col gap-2'
+                            >
+                                <input
+                                    type="text"
+                                    className='bg-[#3C3C3C] py-2 px-3 text-white rounded-xl text-sm'
+                                    placeholder='Nome da nova lista'
+                                    value={newListName}
+                                    onChange={(e) => setNewListName(e.target.value)}
+                                    autoFocus
+                                />
+                                <div className='flex justify-around'>
+                                    <button
+                                        type='submit'
+                                        className='cursor-pointer text-sm transition-colors
+                                        duration-150 ease-in-out hover:bg-[#82203C] rounded-xl py-1 px-4'
+                                    >
+                                        Criar
+                                    </button>
+                                    <button
+                                        type='button'
+                                        className='cursor-pointer text-sm transition-colors duration-150
+                                        ease-in-out hover:bg-[#82203C] rounded-xl py-1 px-4'
+                                        onClick={() => {
+                                            setIsAdding(false);
+                                            setNewListName('');
+                                        }}
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     ) : (
                         <button
@@ -123,10 +128,40 @@ export default function SidebarTaskList({ lists }: SidebarProps){
                         </button>
                     )}
                 </div>
+                    {localLists.map((list) => {
+                        const path = `/dashboard/${list.id}`;
+                        const active = isActive(path);
+
+                        return (
+                        <li key={list.id} className='mb-2'>
+                            <div className={`flex items-center ${active ? activeRouter : ''} rounded-2xl`}>
+                                <button 
+                                    className='cursor-pointer hover: p-2 rounded-full
+                                    transition-colors duration-150 ease-in-out hover:bg-[#434242]/40'
+                                    onClick={() => setModal({ type: 'edit', listId: list.id})}
+                                >
+                                    <DotsThreeVerticalIcon size={24} weight='bold'/>
+                                </button>
+
+                                <Link
+                                    href={createLink(list.id)}
+                                    className={`
+                                        ${linkBaseRouter}
+                                        ${active ? 'font-semibold' : 'font-medium'}
+                                        ${!active ? hoverRouter : ''} w-full
+                                    `}
+                                >
+                                    {list.name}
+                                </Link>
+                            </div>
+                        </li>
+                        );
+                    })}      
+                </ul>
             </nav>
             <div className='flex justify-center mb-6'>
                 <button 
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => setModal({ type: 'logout'})}
                     className='text-white flex cursor-pointer items-center gap-x-1 
                     hover:bg-[#82203C] px-4 py-1 transition-colors duration-150 
                     ease-in-out rounded-2xl'
@@ -134,34 +169,19 @@ export default function SidebarTaskList({ lists }: SidebarProps){
                         <PowerIcon size={20} weight='bold'/>
                         Sair
                 </button>
-                <ModalLogout isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                    <div className='flex flex-col items-center py-10'>
-                        <Image
-                            src="/favicon.svg"
-                            alt="Logo Mega Task"
-                            width={125}
-                            height={125}
-                            priority
-                        />
-                        <h2 className='text-white font-semibold text-3xl mb-8 mt-2'>Já está indo embora?</h2>
-                        <button 
-                            onClick={() => router.push('/login')}
-                            className='bg-[#82203C] text-white font-semibold text-xl cursor-pointer
-                            py-1 transition-colors duration-150 ease-in-out rounded-2xl w-full mb-2 hover:bg-[#982A35]'
-                        >
-                            Sim, Sair
-                        </button>
-                        <button 
-                            onClick={() => setIsModalOpen(false)}
-                            className='text-gray-500 text-xl cursor-pointer font-semibold 
-                            hover:bg-[#434242]/50 hover:text-gray-300 w-full rounded-2xl transition-colors duration-150 ease-in-out py-1'
-                        >
-                            Não, vou ficar
-                        </button>
-                    </div>
-
-                </ModalLogout>
             </div>
+            {modal.type === 'edit' && modal.listId && (
+                    <EditListModal 
+                        isOpen
+                        onClose={() => setModal({ type: null})}
+                        onDelete={() => handleDeleteList(modal.listId!)}
+                        list={localLists.find(l => l.id === modal.listId)!}
+                        onSave={(name) => handleEditListName(modal.listId!, name)}
+                    />
+                )}
+                {modal.type === 'logout' && (
+                    <LogoutModal isOpen onClose={() => setModal({ type: null })}/>
+                )}
         </aside>
     );
 }

@@ -1,10 +1,7 @@
-
-export type IconName = 'SunIcon' | 'PlusCircleIcon' | 'DotsThreeVerticalIcon';
-
 export interface ListItem {
     id: string;
     name: string;
-    icon: IconName;
+    icon: string;
 }
 
 export interface DashboardLayoutProps {
