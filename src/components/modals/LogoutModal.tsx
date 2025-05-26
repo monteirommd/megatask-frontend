@@ -1,5 +1,6 @@
 import { Modal } from '../Modal';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface LogoutModalProps {
   isOpen: boolean;
@@ -12,19 +13,27 @@ export function LogoutModal({ isOpen, onClose }: LogoutModalProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Sair">
       <div className="flex flex-col items-center gap-4">
-        <p className="text-center">Tem certeza que deseja sair?</p>
-        <div className="flex gap-4 w-full">
+        <Image 
+          alt='Logo MegaTask'
+          src='/favicon.svg'
+          width={150}
+          height={150}
+        />
+        <p className="text-center font-bold text-2xl mb-6">Tem certeza que deseja sair?</p>
+        <div className="flex flex-col gap-2 w-full">
           <button
             onClick={() => router.push('/login')}
-            className="bg-[#82203C] hover:bg-[#982A35] flex-1 rounded-xl py-1"
+            className="bg-[#82203C] hover:bg-[#982A35] flex-1 font-semibold text-xl 
+            transition-colors duration-150 ease-in-out rounded-xl py-1 cursor-pointer"
           >
             Sim, sair
           </button>
           <button
             onClick={onClose}
-            className="bg-[#434242] hover:bg-[#5a5a5a] flex-1 rounded-xl py-1"
+            className="hover:bg-[#5a5a5a]/40 text-white/40 hover:text-white/60 ease-in-out
+            flex-1 font-semibold text-xl rounded-xl py-1 cursor-pointer transition-colors duration-150"
           >
-            Cancelar
+            Não, irei ficar
           </button>
         </div>
       </div>

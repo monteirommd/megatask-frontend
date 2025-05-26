@@ -1,6 +1,8 @@
 import SidebarTaskList from "@/components/dashboard/SidebarTaskList";
 import HeaderDash from "@/components/dashboard/HeaderDash";
 import { DashboardLayoutProps } from "@/types";
+import SidebarEdit from "@/components/dashboard/SidebarEdit";
+import { SidebarProvider } from "@/context/SidebarContext";
 
 import { userTaskList } from "@/lib/data";
 
@@ -8,18 +10,21 @@ export default async function DashboardLayout( {children, searchParams}: Dashboa
     const userEmail = searchParams?.email as string | null;
 
     return(
-        <div className="flex flex-col h-screen">
-            <HeaderDash
-                user={userEmail}
-            />
-            <div className="flex flex-1 overflow-hidden">
-                <SidebarTaskList
-                    lists={userTaskList}
+        <SidebarProvider>
+            <div className="flex flex-col h-screen">
+                <HeaderDash
+                    user={userEmail}
                 />
-                <main className="flex-1 p-6 overflow-y-auto bg-gray-100">
-                    {children}
-                </main>
+                <div className="flex flex-1 overflow-hidden">
+                    <SidebarTaskList
+                        lists={userTaskList}
+                    />
+                    <main className="flex-1 p-6 overflow-y-auto bg-[#1E1E1E]">
+                        {children}
+                    </main>
+                    <SidebarEdit />
+                </div>
             </div>
-        </div>
+        </SidebarProvider>
     );
 }

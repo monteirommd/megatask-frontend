@@ -34,8 +34,8 @@ export default function DashboardRedirectPage(){
     
     if (isCheckingAuth) {
         return (
-            <div className="flex items-center justify-center h-screen bg-gray-100">
-                <p className="text-lg text-gray-700 animate-pulse">Verificando acesso...</p>
+            <div className="flex items-center justify-center h-screen bg-[#1E1E1E]">
+                <p className="text-lg text-gray-100 animate-pulse">Verificando acesso...</p>
             </div>
         );
     }
@@ -43,8 +43,8 @@ export default function DashboardRedirectPage(){
     // Este conteúdo será mostrado muito brevemente (ou nem isso)
     // antes do segundo redirecionamento (para a lista padrão) ocorrer.
     return (
-        <div className="flex items-center justify-center h-screen bg-gray-100">
-            <p className="text-lg text-gray-700 animate-pulse">Redirecionando para seu painel...</p>
+        <div className="flex items-center justify-center h-screen bg-[#1E1E1E}]">
+            <p className="text-lg text-gray-100 animate-pulse">Redirecionando para seu painel...</p>
         </div>
     );
 

@@ -2,10 +2,9 @@
 
 import { useState } from 'react'
 import { PlusCircleIcon, PowerIcon, DotsThreeVerticalIcon, SunIcon, PencilSimpleIcon, TrashIcon } from '@phosphor-icons/react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link'
 import { v4 as uuidv4 } from 'uuid' 
-import Image from 'next/image';
 import { ListItem } from '@/types';
 import { EditListModal } from '@/components/modals/EditListModal'
 import { LogoutModal } from '@/components/modals/LogoutModal';
@@ -15,6 +14,7 @@ interface SidebarProps {
 }
 
 export default function SidebarTaskList({ lists }: SidebarProps){
+    const router = useRouter()
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const currentEmail = searchParams.get('email');
@@ -58,6 +58,12 @@ export default function SidebarTaskList({ lists }: SidebarProps){
 
     const handleDeleteList = (id: string) => {
         setLocalLists(prev => prev.filter(list => list.id !== id));
+
+        const currentListId = pathname.split('/').pop();
+
+        if(currentListId === id) {
+            router.push(`/dashboard/today${currentEmail ? `?email=${encodeURIComponent(currentEmail)}` : ''}`)
+        }
     };
 
     const linkBaseRouter = 'flex items-center px-3 py-2 text-sm gap-2 transition-colors duration-150 ease-in-out rounded-2xl'
@@ -65,7 +71,7 @@ export default function SidebarTaskList({ lists }: SidebarProps){
     const activeRouter = 'bg-[#82203C]'
 
     return(
-        <aside className='w-2xs h-screen flex flex-col justify-around bg-[#1E1E1E]'>
+        <aside className='w-2xs h-screen flex flex-col justify-around bg-[#181818]'>
             <nav className='text-white p-8 gap-y-3 justify-baseline'>
                 <ul>
                     <Link

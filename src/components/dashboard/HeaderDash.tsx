@@ -5,7 +5,7 @@ import Image from 'next/image';
 export default function HeaderDash({user}: {user:string | null}){
 
     return(
-        <main className='grid grid-cols-3 items-center p-6 bg-[#1E1E1E]'>
+        <main className='grid grid-cols-3 items-center p-6 bg-[#181818]'>
             <div className='flex items-center gap-x-3'>
                 <Image
                     alt='Logo MegaTask'
