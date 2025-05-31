@@ -13,11 +13,17 @@ import AddTask from '@/components/dashboard/AddTask'
 
 
 export default function ListPage({ lists }: { lists: ListItem[] }){
-    const { user, token } = useAuth();
-    const { isOpen } = useSidebar()
     const params = useParams();
-    const listId = Number(params.listId);
-
+    const rawListId = params?.listId;
+    console.log("params:", params);
+    
+    const listId = rawListId && !Array.isArray(rawListId) && !isNaN(Number(rawListId))
+    ? Number(rawListId)
+    : null;
+    
+   const currentList = lists && listId !== null
+  ? lists.find(list => Number(list.id) === listId)
+  : null;
     const [tasks, setTasks] = useState<Task[]>([])
 
     useEffect(() => {
@@ -50,7 +56,7 @@ export default function ListPage({ lists }: { lists: ListItem[] }){
             p-4`}
         >
             <div className='flex flex-col w-full'>
-                <h1 className='text-center font-bold text-2xl text-white mb-8'>{listId}</h1>
+                <h1 className='text-center font-bold text-2xl text-white mb-8'>{currentList?.name ?? "Lista"}</h1>
                 <AddTask onTaskCreated={handleAddTaskLocal}/>
                 <ul>
 

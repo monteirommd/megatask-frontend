@@ -23,12 +23,12 @@ export default function SidebarTaskList({ lists }: SidebarProps){
     const router = useRouter()
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const currentEmail = searchParams.get('email');
+    const userId = searchParams.get('id');
     
 
     const [modal, setModal] = useState<{
         type: 'edit' | 'logout' | null;
-        listId?: string;
+        listId?: number;
     }>( { type: null })
 
     const [localLists, setLocalLists] = useState<ListItem[]>(lists);
@@ -37,15 +37,21 @@ export default function SidebarTaskList({ lists }: SidebarProps){
 
     useEffect(() => {
         const loadLists = async () => {
-            if(!user || !token) return
+            if(!user || !token) return;
+            const usuario_id = Number(user.id);
+
+            if (!usuario_id || isNaN(usuario_id)) {
+                console.warn('ID do usuário inválido:', user.id);
+                return;
+            }
             try{
                 const usuario_id = Number(user.id)
-                const listsFromApi: ListaFromApi[] = await listarListas(usuario_id, token);
+                const listsFromApi: ListaFromApi[] = await listarListas(usuario_id);
 
                 console.log('Listas recebidas da API:', listsFromApi);
                 
                 const formattedList = listsFromApi.map(list => ({
-                    id: String(list.id),
+                    id: Number(list.id),
                     name: list.nome,
                     icon: 'DotsThreeVerticalIcon',
                 }));
@@ -57,10 +63,10 @@ export default function SidebarTaskList({ lists }: SidebarProps){
         loadLists();
     }, [user, token])
 
-    const createLink = (listName: string) => {
-        let href = `/dashboard/${listName}`
-        if (currentEmail) {
-            href += `?email=${encodeURIComponent(currentEmail)}`;
+    const createLink = (listId: number) => {
+        let href = `/dashboard/${listId}`
+        if (userId) {
+            href += `?usuario_id=${encodeURIComponent(listId)}`;
         }
         return href;
     }
@@ -75,7 +81,7 @@ export default function SidebarTaskList({ lists }: SidebarProps){
             const response = await criarLista(newListName.trim(), usuario_id, token);
 
             const newList: ListItem = {
-                id: String(response.id), // use o id real do banco
+                id: Number(response.id), // use o id real do banco
                 name: response.nome || newListName.trim(),
                 icon: 'DotsThreeVerticalIcon',
              };
@@ -87,20 +93,20 @@ export default function SidebarTaskList({ lists }: SidebarProps){
         }
     }
 
-    const handleEditListName = (id: string, newName: string) => {
+    const handleEditListName = (id: number, newName: string) => {
         setLocalLists(prev => prev.map(list => (list.id === id ? { ...list, name: newName } : list)));
     };
 
-    const handleDeleteList = (id: string) => {
+    const handleDeleteList = (id: number) => {
         setLocalLists(prev => prev.filter(list => list.id !== id));
 
-        const currentListId = pathname.split('/').pop();
-
-        if(currentListId === id) {
-            router.push(`/dashboard/today${currentEmail ? `?email=${encodeURIComponent(currentEmail)}` : ''}`)
+        const currentListId = pathname.split('/').pop()!;
+        console.log('ID:', id, 'currentListId:', currentListId);
+        if(currentListId === String(id)) {
+            router.push(`/dashboard/today${userId ? `?usuario_id=${encodeURIComponent(userId)}` : ''}`)
         }
     };
-
+    
     const linkBaseRouter = 'flex items-center px-3 py-2 text-sm gap-2 transition-colors duration-150 ease-in-out rounded-2xl'
     const hoverRouter = 'hover:bg-[#434242]'
     const activeRouter = 'bg-[#82203C]'

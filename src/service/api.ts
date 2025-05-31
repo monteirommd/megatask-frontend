@@ -79,18 +79,26 @@ export async function criarLista(nome: string, usuario_id: number, token: string
     return res.json();
 }
 
-export async function listarListas(usuario_id: number, token: string | null) {
+export async function listarListas(usuario_id: number) {
   const res = await fetch(`${API_BASE}/select/list/task?usuario_id=${usuario_id}`, {
     method: 'GET',
     headers: authHeaders(),
   });
-  const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(`Erro ao listar listas: ${JSON.stringify(data)}`);
+    let errorMessage = `Erro ao listar listas: ${res.status} ${res.statusText}`;
+    try {
+      const errorData = await res.json();
+      if (errorData?.message) {
+        errorMessage += ` - ${errorData.message}`;
+      }
+    } catch {
+      // Ignora erros ao ler o JSON
+    }
+    throw new Error(errorMessage);
   }
 
-  return data;
+  return await res.json();
 }
 
 // Tarefas
