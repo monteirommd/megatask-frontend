@@ -20,6 +20,7 @@ export default function PasswordInput({ value, onChange, title = "Senha:" }: { v
                 placeholder="Digite sua senha"
             />
             <button
+                type='button'
                 onClick={() => setShowPassword(!showPassword)}
                 className='absolute right-3 top-2/3 -translate-y-1/2 text-gray-500 hover:text-gray-800'
 

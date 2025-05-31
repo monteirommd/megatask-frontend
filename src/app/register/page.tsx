@@ -6,24 +6,29 @@ import PasswordInput from "@/components/login/PasswordInput";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import NameInput from "@/components/login/NameInput";
-import { register } from '@/lib/api/auth'
+import { createUser } from '@/service/api'
 import LogoContent from "@/components/login/LogoContent";
 
 export default function RegisterPage(){
     const router = useRouter();
+
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
+    const [success, setSuccess] = useState('')
     const [error, setError] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+        console.log("Enviando dados:", { name, email, password });
         try {
-            const res = await register(name, email, password);
+            await createUser(name, email, password);
+            setSuccess('Usuário criado com sucesso!')
             router.push('/login')
         } catch(err:any) {
-            setError(err.message);    
+            const msg = err.message || "erro ao criar usuario"
+            setError(msg);    
         }
     }
 
@@ -57,7 +62,8 @@ export default function RegisterPage(){
                                 mt-12 font-bold cursor-pointer'>
                             Cadastre-se
                         </button>
-                        {error && <p>{error}</p>}
+                        {error && <p className="text-red-500">{error}</p>}
+                        {success && <p className="text-green-500">{success}</p>}
                     </div>
                 </form>
                 <p className='mt-2'>Já tem conta?

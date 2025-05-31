@@ -1,17 +1,27 @@
 'use client'
 
 import Link from "next/link";
-import { useRef } from 'react';
-import { useSearchParams } from "next/navigation";
+import { useRef, useState } from 'react';
+import { useSearchParams, useRouter } from "next/navigation";
 import LogoContent from "@/components/login/LogoContent";
+import { confirmarCodigo } from "@/service/api";
+import { useAuth } from "@/context/AuthContext";
 //importação de bibliotecas
 
 //inicialização do componente React
 export default function CodeVerification() {
+
+    const router = useRouter()
     //uso do hook useRouter para buscar parametros atribuidos anteriormente
     const searchParams = useSearchParams();
     //atribuição do parametro enviado da rota anterior a uma variavel email
-    const email = searchParams.get('email');
+    const email = searchParams.get('email')
+    const idParam = searchParams.get('id') || '';
+    const id = Number(idParam);
+
+    const [code, setCode] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('')
 
     //Definição da variavel input e atibuição do useRef para não renderizar componente ao alterar estado
     //tipificação com typescript => Tipo = array de elementos html ou null
@@ -38,19 +48,26 @@ export default function CodeVerification() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     //recebe todos os valores digitados no input
     const code = inputs.current.map((input) => input?.value).join('');
     //verifica se o input recebeu 4 valores e retorna erro caso não tenha recebido
     if (code.length < 4) {
-      alert('Por favor, preencha todos os dígitos.');
+      setError('Por favor, preencha todos os dígitos.');
       return;
     }
 
-    // Enviar o código
-    console.log('Código enviado:', code);
-    // Você pode usar fetch ou qualquer lógica de verificação aqui
+    try{
+        const { token, id_usuario } = await confirmarCodigo(id, code);
+        setSuccess('Código validado com sucesso');
+        setTimeout(() => {
+            router.push(`/forgotpassword/newpassword?token=${encodeURIComponent(token)}&id=${encodeURIComponent(id_usuario)}`)
+        }, 2000)
+    } catch {
+        setError('Código inválido ou expirado')
+    }
+
   };
 
     
@@ -89,7 +106,11 @@ export default function CodeVerification() {
                         </button>
                     </div>
                 </form>
-                <p>Não recebeu o email? <button className="border-none cursor-pointer font-bold mt-2 hover:text-[#82203C]">Aperte para reenviar</button></p>
+                {error &&  <p className="text-red-500 mt-2">{error}</p>}
+                {success && <p className="text-green-600 mt-2">{success}</p>}
+                <p>
+                    Não recebeu o email? {' '}
+                    <button className="border-none cursor-pointer font-bold mt-2 hover:text-[#82203C]">Aperte para reenviar</button></p>
                 <div className="flex items-center mt-2">
                     <p className=''>De volta ao
                         <Link href="../login" className='font-bold hover:text-[#82203C] ml-0.5'>

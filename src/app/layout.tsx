@@ -1,5 +1,6 @@
 import '../styles/globals.css'
 import type { Metadata } from 'next'
+import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
   title: 'Mega Task | To-Do List',
@@ -13,7 +14,7 @@ export default function RootLayout( { children }: { children: React.ReactNode } 
   return (
     <html lang="pt-br">
       <body>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

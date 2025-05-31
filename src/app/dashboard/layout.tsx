@@ -7,14 +7,11 @@ import { SidebarProvider } from "@/context/SidebarContext";
 import { userTaskList } from "@/lib/data";
 
 export default async function DashboardLayout( {children, searchParams}: DashboardLayoutProps ){
-    const userEmail = searchParams?.email as string | null;
 
     return(
         <SidebarProvider>
             <div className="flex flex-col h-screen">
-                <HeaderDash
-                    user={userEmail}
-                />
+                <HeaderDash/>
                 <div className="flex flex-1 overflow-hidden">
                     <SidebarTaskList
                         lists={userTaskList}

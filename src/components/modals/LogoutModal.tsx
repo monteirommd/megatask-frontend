@@ -1,3 +1,4 @@
+import { useAuth } from '@/context/AuthContext'
 import { Modal } from '../Modal';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -8,7 +9,10 @@ interface LogoutModalProps {
 }
 
 export function LogoutModal({ isOpen, onClose }: LogoutModalProps) {
+  const { logout, user } = useAuth();
+
   const router = useRouter();
+
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Sair">
@@ -22,7 +26,10 @@ export function LogoutModal({ isOpen, onClose }: LogoutModalProps) {
         <p className="text-center font-bold text-2xl mb-6">Tem certeza que deseja sair?</p>
         <div className="flex flex-col gap-2 w-full">
           <button
-            onClick={() => router.push('/login')}
+            onClick={() => {
+              logout();
+              router.push('/login')
+            }}
             className="bg-[#82203C] hover:bg-[#982A35] flex-1 font-semibold text-xl 
             transition-colors duration-150 ease-in-out rounded-xl py-1 cursor-pointer"
           >

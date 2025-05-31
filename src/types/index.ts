@@ -3,18 +3,25 @@ export interface ListItem {
     name: string;
     icon: string;
 }
+export type ListaFromApi = {
+  id: number;
+  nome: string;
+};
+
 
 export interface DashboardLayoutProps {
     children: React.ReactNode;
     searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export type Priority = "high" | "medium" | "low" | "none"
+export type PriorityType = "high" | "medium" | "low" | "none"
 
-export interface Task {
-    id: string;
-    listId: string | string[];
-    title: string;
-    priority: Priority
-    completed: boolean;
-}
+export type Task = {
+  id: string;
+  titulo: string;
+  descricao: string;
+  data_tarefa: string;
+  prioridade: 'baixa' | 'media' | 'alta';
+  completed: boolean;
+  lista_tarefa_id: number;
+};

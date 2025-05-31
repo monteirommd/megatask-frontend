@@ -1,0 +1,173 @@
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+import Cookies from 'js-cookie';
+
+const headers = {
+  'Content-Type': 'application/json',
+  Accept: 'application/json',
+};
+
+function authHeaders() {
+  const token = Cookies.get('token');
+  return {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+}
+
+// Usuário
+export async function createUser(name: string, email: string, password: string) {
+  const res = await fetch(`${API_BASE}/create/user`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({  
+            nome:name,
+            email:email,
+            senha:password,
+             }),
+  });
+  return res.json();
+}
+
+export async function validarUsuario(code: string) {
+  const res = await fetch(`${API_BASE}/valid/user/${code}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+  });
+  return res.json();
+}
+
+export async function login(email: string, password: string) {
+  const res = await fetch(`${API_BASE}/login`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ email, senha:password }),
+  });
+  if (!res.ok) {
+    const errorBody = await res.json();
+    throw new Error(errorBody.message || 'Falha no login');
+  }
+  return res.json(); 
+}
+
+// Lista de Tarefas
+export async function criarLista(nome: string, usuario_id: number, token: string | null) {
+    if (!token) {
+        console.error('Token JWT ausente!');
+        throw new Error('Token JWT ausente. Faça login novamente.');
+    }
+    console.log('Enviando token:', token);
+    console.log('Payload:', { nome, usuario_id });
+    
+    const res = await fetch(`${API_BASE}/create/list/task`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+            nome, 
+            usuario_id: Number(usuario_id),
+        }),
+    });
+    
+    if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(`Erro ao criar lista: ${msg}`);
+    }
+    return res.json();
+}
+
+export async function listarListas(usuario_id: number, token: string | null) {
+  const res = await fetch(`${API_BASE}/select/list/task?usuario_id=${usuario_id}`, {
+    method: 'GET',
+    headers: authHeaders(),
+  });
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(`Erro ao listar listas: ${JSON.stringify(data)}`);
+  }
+
+  return data;
+}
+
+// Tarefas
+type Tarefa = {
+  titulo: string;
+  descricao: string;
+  data_tarefa: string;
+  prioridade: string;
+  concluida: boolean;
+  lista_tarefa_id: number;
+};
+
+export async function criarTarefa(tarefa: Tarefa) {
+  const res = await fetch(`${API_BASE}/create/task`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify(tarefa),
+  });
+  return res.json();
+}
+
+export async function listarTarefas(lista_tarefa_id: number) {
+  const res = await fetch(`${API_BASE}/select/all/task?lista_tarefa_id=${lista_tarefa_id}`, {
+    method: 'GET',
+    headers: authHeaders(),
+  });
+    if (!res.ok) {
+    const erro = await res.text();
+    throw new Error(`Erro ao listar tarefas: ${erro}`);
+    }
+
+  return res.json();
+}
+
+export async function deletarTarefa(id: number) {
+  const res = await fetch(`${API_BASE}/delete/one/task/${id}`, {
+    method: 'DELETE',
+    headers: { Accept: 'application/json' },
+  });
+  return res.json();
+}
+
+export async function deletarTodasTarefas(listaId: number) {
+  const res = await fetch(`${API_BASE}/delete/all/task/${listaId}`, {
+    method: 'DELETE',
+    headers: { Accept: 'application/json' },
+  });
+  return res.json();
+}
+
+// Recuperação de Senha
+export async function enviarCodigo(email: string) {
+  const res = await fetch(`${API_BASE}/forgot/password`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ email }),
+  });
+  return res.json(); // { Message, identy }
+}
+
+export async function confirmarCodigo(id: number, codigo: string) {
+  const res = await fetch(`${API_BASE}/confirm/code/email`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ id, codigo }),
+  });
+  return res.json(); // { token, id }
+}
+
+export async function resetarSenha(id: number, novaSenha: string, token: string) {
+  const res = await fetch(`${API_BASE}/reset/password`, {
+    method: 'POST',
+    headers: {
+      ...headers,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ id, senha_nova: novaSenha }),
+  });
+  return res.json();
+}

@@ -40,7 +40,7 @@ export default function TaskItem({ task, onToggleCompleted }: TaskItemProps){
                         `}
                         
                 />
-                <span className={`text-xl text-white transition-all ${task.completed ? "line-through text-white/40": ""}`}>{task.title}</span>
+                <span className={`text-xl text-white transition-all ${task.completed ? "line-through text-white/40": ""}`}>{task.titulo}</span>
             </div>
             <div className="flex space-x-2 ">
                 <CircleIcon 

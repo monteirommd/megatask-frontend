@@ -5,19 +5,28 @@ import { ArrowLeftIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { enviarCodigo } from "@/service/api";
 import LogoContent from "@/components/login/LogoContent";
 
 export default function ForgotPassword(){
     // contante de variavel que receberá o valor da string email
     const [email, setEmail] = useState('')
+    const [error, setError] = useState('')
+    const [success, setSuccess] = useState('')
     // hook para navegação entre rotas com acesso de informação na proxima rota
     const router = useRouter();
     //função para submição de formulario
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         //prevenção de reloud de página, evento default do form
         e.preventDefault();
+        try {
+            const { identy } = await enviarCodigo(email)
+            setSuccess('Código enviado para seu email!');
+            setTimeout(() => router.push(`/forgotpassword/codeverification?email=${encodeURIComponent(email)}&id=${encodeURIComponent(identy)}`), 2000);
+        } catch { 
+            setError('Erro ao enviar email');
+        }
         //uso do hook useRouter para navegação entre rotas guardando email declarado no input
-        router.push(`/forgotpassword/codeverification?email=${encodeURIComponent(email)}`)
     }
 
     return(
@@ -30,7 +39,7 @@ export default function ForgotPassword(){
                 <form onSubmit={handleSubmit}>
                     <EmailInput 
                         value={email} 
-                        onChange={e => setEmail(e.target.value)} 
+                        onChange={(e) => setEmail(e.target.value)} 
                     />
                     
                     <div className='flex flex-col items-center lg:justify-end lg:items-end'>
@@ -43,6 +52,8 @@ export default function ForgotPassword(){
                         </button>
                     </div>
                 </form>
+                {error && <p className="text-red-600">{error}</p>}
+                {success && <p className="text-green-600">{success}</p>}
                 <div className="flex items-center mt-2">
                     <ArrowLeftIcon weight="bold" className="mr-1"/>
                     <p className=''>De volta ao

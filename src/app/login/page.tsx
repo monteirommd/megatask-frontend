@@ -1,28 +1,41 @@
 'use client'
 
-import { login } from '@/lib/api/auth'
+import { useAuth } from '@/context/AuthContext'
 import Link from 'next/link';
 import PasswordInput from "../../components/login/PasswordInput";
 import EmailInput from "../../components/login/EmailInput";
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import LogoContent from '@/components/login/LogoContent';
+import { login } from '@/service/api'
+import Cookies from 'js-cookie';
 
 export default function LoginPage(){
     const router = useRouter();
+
+    const { login: loginContext } = useAuth()
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) =>{
         e.preventDefault();
+        console.log("Tentando login com:", { email, password });
+        setError('')
 
         try {
-            const result = await login(email, password);
-            localStorage.setItem('token', result.token);
-            router.push(`/dashboard?email=${encodeURIComponent(email)}`);
+            const res = await login(email, password);
+            if (!res || !res.token || !res.user) {
+                throw new Error('Resposta inválida do servidor');
+            }
+
+
+            loginContext(res.token, res.user);
+
+            router.push('/dashboard');
         } catch (err: any) {
-            setError(err.message);
+            setError('Email ou senha inválidos');
         }
     };
     return(
@@ -56,7 +69,7 @@ export default function LoginPage(){
                                 mt-12 font-bold cursor-pointer'>
                             LOGIN
                         </button>
-                        {error && <p>{error}</p>}
+                        {error && <p className='text-center text-[#982A35]'>{error}</p>}
                     </div>
                 </form>
                 <p className='mt-2'>Não tem conta?

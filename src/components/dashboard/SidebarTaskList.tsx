@@ -1,24 +1,31 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PlusCircleIcon, PowerIcon, DotsThreeVerticalIcon, SunIcon, PencilSimpleIcon, TrashIcon } from '@phosphor-icons/react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link'
 import { v4 as uuidv4 } from 'uuid' 
-import { ListItem } from '@/types';
+
+import { ListItem, ListaFromApi } from '@/types';
 import { EditListModal } from '@/components/modals/EditListModal'
 import { LogoutModal } from '@/components/modals/LogoutModal';
+import { criarLista, listarListas } from '@/service/api'
+
+import { useAuth } from '@/context/AuthContext'
 
 interface SidebarProps {
     lists: ListItem[];
 }
 
 export default function SidebarTaskList({ lists }: SidebarProps){
+    const { user, token } = useAuth();
+
     const router = useRouter()
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const currentEmail = searchParams.get('email');
     
+
     const [modal, setModal] = useState<{
         type: 'edit' | 'logout' | null;
         listId?: string;
@@ -28,8 +35,30 @@ export default function SidebarTaskList({ lists }: SidebarProps){
     const [newListName, setNewListName] = useState('');
     const [isAdding, setIsAdding] = useState(false);
 
-    const createLink = (listId: string) => {
-        let href = `/dashboard/${listId}`
+    useEffect(() => {
+        const loadLists = async () => {
+            if(!user || !token) return
+            try{
+                const usuario_id = Number(user.id)
+                const listsFromApi: ListaFromApi[] = await listarListas(usuario_id, token);
+
+                console.log('Listas recebidas da API:', listsFromApi);
+                
+                const formattedList = listsFromApi.map(list => ({
+                    id: String(list.id),
+                    name: list.nome,
+                    icon: 'DotsThreeVerticalIcon',
+                }));
+                setLocalLists(formattedList)
+            }catch(error){
+                console.error('Erro ao carregar listas', error);
+            }
+        };
+        loadLists();
+    }, [user, token])
+
+    const createLink = (listName: string) => {
+        let href = `/dashboard/${listName}`
         if (currentEmail) {
             href += `?email=${encodeURIComponent(currentEmail)}`;
         }
@@ -38,18 +67,24 @@ export default function SidebarTaskList({ lists }: SidebarProps){
 
     const isActive = (path: string) => pathname === path;
 
-    const handleCreateList = () => {
-        if (!newListName.trim()) return;
+    const handleCreateList = async () => {
+        if (!newListName.trim() || !user || !token) return;
 
-        const newList: ListItem = {
-            id: uuidv4(),
-            name: newListName.trim(),
-            icon: 'DotsThreeVerticalIcon',
-        };
+        try{
+            const usuario_id = Number(user.id)
+            const response = await criarLista(newListName.trim(), usuario_id, token);
 
-        setLocalLists(prev => [...prev, newList]);
-        setNewListName('')
-        setIsAdding(false)
+            const newList: ListItem = {
+                id: String(response.id), // use o id real do banco
+                name: response.nome || newListName.trim(),
+                icon: 'DotsThreeVerticalIcon',
+             };
+            setLocalLists(prev => [...prev, newList]);
+            setNewListName('')
+            setIsAdding(false)
+        } catch (error){
+            console.error('Erro ao criar a lista', error);
+        }
     }
 
     const handleEditListName = (id: string, newName: string) => {
@@ -75,8 +110,8 @@ export default function SidebarTaskList({ lists }: SidebarProps){
             <nav className='text-white p-8 gap-y-3 justify-baseline'>
                 <ul>
                     <Link
-                        href={`/dashboard/today`}
-                        className={`${linkBaseRouter} ${isActive('/dashboard/today') ? activeRouter : hoverRouter}`}
+                        href={`/dashboard/Hoje`}
+                        className={`${linkBaseRouter} ${isActive('/dashboard/Hoje') ? activeRouter : hoverRouter}`}
                     >
                         <SunIcon size={24} weight='bold'/>
                         <h2 className='font-bold text-xl'>Hoje</h2>
