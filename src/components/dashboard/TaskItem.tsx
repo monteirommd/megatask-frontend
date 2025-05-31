@@ -7,9 +7,10 @@ import { CircleIcon, NotePencilIcon } from '@phosphor-icons/react'
 interface TaskItemProps{
     task: Task;
     onToggleCompleted: () => void;
+    onDelete: () => void;
 }
 
-export default function TaskItem({ task, onToggleCompleted }: TaskItemProps){
+export default function TaskItem({ task, onToggleCompleted, onDelete }: TaskItemProps){
     const { sidebarType, openSidebar, data } = useSidebar();
 
     const isEditingThisTask = sidebarType === "edit-task" && task.id === data?.taskId;
@@ -48,7 +49,10 @@ export default function TaskItem({ task, onToggleCompleted }: TaskItemProps){
                     className=""
                 />
                 <button
-                    onClick={() => openSidebar("edit-task", { taskId: task.id })}
+                    onClick={() => openSidebar("edit-task",
+                        { taskId: task.id,
+                            onDelete,
+                        })}
                     className={`
                         cursor-pointer transition text-white hover:text-gray-600`}
                 >

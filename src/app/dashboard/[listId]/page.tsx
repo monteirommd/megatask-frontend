@@ -15,7 +15,6 @@ import AddTask from '@/components/dashboard/AddTask'
 export default function ListPage({ lists }: { lists: ListItem[] }){
     const params = useParams();
     const rawListId = params?.listId;
-    console.log("params:", params);
     
     const listId = rawListId && !Array.isArray(rawListId) && !isNaN(Number(rawListId))
     ? Number(rawListId)
@@ -44,6 +43,9 @@ export default function ListPage({ lists }: { lists: ListItem[] }){
     function handleAddTaskLocal(tarefa: Task){
         setTasks(prev => [...prev, tarefa]);
     }
+    function handleDeleteTaskLocal(taskId: string){
+        setTasks((prev) => prev.filter((task) => task.id !== taskId));
+    }
 
     function toggleTaskCompleted(taskId: string) {
         setTasks(prev => prev.map(t => t.id === taskId ? {...t, completed: !t.completed }: t))
@@ -65,6 +67,7 @@ export default function ListPage({ lists }: { lists: ListItem[] }){
                             key={task.id}
                             task={task}
                             onToggleCompleted={() => toggleTaskCompleted(task.id)}
+                            onDelete={() => handleDeleteTaskLocal(task.id)}
                         />
                     ))}
                 </ul>

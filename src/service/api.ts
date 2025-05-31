@@ -52,13 +52,6 @@ export async function login(email: string, password: string) {
 
 // Lista de Tarefas
 export async function criarLista(nome: string, usuario_id: number, token: string | null) {
-    if (!token) {
-        console.error('Token JWT ausente!');
-        throw new Error('Token JWT ausente. Faça login novamente.');
-    }
-    console.log('Enviando token:', token);
-    console.log('Payload:', { nome, usuario_id });
-    
     const res = await fetch(`${API_BASE}/create/list/task`, {
         method: 'POST',
         headers: {
@@ -125,7 +118,7 @@ export async function editarTituloLista(lista_tarefa_id: number, nome: string){
     headers: authHeaders(),
     body: JSON.stringify({ nome, lista_tarefa_id})
   });
-  
+
   if (!res.ok) {
     const errorText = await res.text();
     throw new Error(`Erro ${res.status}: ${errorText}`);
@@ -171,10 +164,17 @@ export async function listarTarefas(lista_tarefa_id: number) {
 }
 
 export async function deletarTarefa(id: number) {
-  const res = await fetch(`${API_BASE}/delete/one/task/${id}`, {
+  const res = await fetch(`${API_BASE}/delete/one/task/`, {
     method: 'DELETE',
-    headers: { Accept: 'application/json' },
+    headers: authHeaders(),
+    body: JSON.stringify({ tarefa_id: id })
   });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Erro ${res.status}: ${errorText}`);
+  }
+
   return res.json();
 }
 

@@ -1,13 +1,33 @@
 'use client'
 
 import { useSidebar } from "@/context/SidebarContext";
+import { deletarTarefa } from "@/service/api";
+import { useAuth } from "@/context/AuthContext";
 import { Calendar as CalendarComponent} from '@/components/ui/calendar'
 import { useState } from 'react'
 import { PriorityType } from "@/types";
 import { PencilIcon, PlusCircleIcon, FlagIcon, CalendarBlankIcon, TrashSimpleIcon, CircleIcon } from '@phosphor-icons/react'
 import TaskButtonWithMenu from "./sidebar-taskbuttonedit/TaskButtonWithMenu";
+
+
+
+
 export default function SidebarTaskItem(){
     const { closeSidebar, data } = useSidebar()
+
+    const handleDelete = async () => {
+        
+
+        try {
+            if (!data?.taskId) return;
+            await deletarTarefa(Number(data.taskId));
+            if(data?.onDelete) data.onDelete()
+            closeSidebar()
+        } catch(error){
+            console.error("Erro ao deletar tarefa:", error);
+        }
+    }
+
     const handlePriorityClick = (priority: PriorityType) => {
         console.log(`Prioridade alterada ${priority}`)
     }
@@ -61,7 +81,10 @@ export default function SidebarTaskItem(){
                 </div>
             </TaskButtonWithMenu>
             <div className="border border-[#982A35] rounded-[4px] text-[#982A35]">
-                <button className="flex items-center p-2 space-x-2 cursor-pointer">
+                <button 
+                    onClick={handleDelete}
+                    className="flex items-center p-2 space-x-2 cursor-pointer"
+                >
                     <TrashSimpleIcon size={24}/>
                     <span>Deletar Task</span>
                 </button>
