@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { ListItem, ListaFromApi } from '@/types';
 import { EditListModal } from '@/components/modals/EditListModal'
 import { LogoutModal } from '@/components/modals/LogoutModal';
-import { criarLista, listarListas } from '@/service/api'
+import { criarLista, listarListas, deletarLista, editarTituloLista } from '@/service/api'
 
 import { useAuth } from '@/context/AuthContext'
 
@@ -23,7 +23,7 @@ export default function SidebarTaskList({ lists }: SidebarProps){
     const router = useRouter()
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const userId = searchParams.get('id');
+    const userId = user?.id?.toString();
     
 
     const [modal, setModal] = useState<{
@@ -35,6 +35,7 @@ export default function SidebarTaskList({ lists }: SidebarProps){
     const [newListName, setNewListName] = useState('');
     const [isAdding, setIsAdding] = useState(false);
 
+
     useEffect(() => {
         const loadLists = async () => {
             if(!user || !token) return;
@@ -45,7 +46,6 @@ export default function SidebarTaskList({ lists }: SidebarProps){
                 return;
             }
             try{
-                const usuario_id = Number(user.id)
                 const listsFromApi: ListaFromApi[] = await listarListas(usuario_id);
 
                 console.log('Listas recebidas da API:', listsFromApi);
@@ -64,21 +64,34 @@ export default function SidebarTaskList({ lists }: SidebarProps){
     }, [user, token])
 
     const createLink = (listId: number) => {
-        let href = `/dashboard/${listId}`
-        if (userId) {
-            href += `?usuario_id=${encodeURIComponent(listId)}`;
-        }
-        return href;
+        const usuarioId = user?.id;
+        return usuarioId
+            ? `/dashboard/${listId}?usuario_id=${encodeURIComponent(usuarioId)}`
+            : `/dashboard/${listId}`;
     }
 
     const isActive = (path: string) => pathname === path;
 
+    const getCurrentListId = (): string | null => {
+        const parts = pathname.split('/');
+        const last = parts[parts.length - 1];
+        return /^\d+$/.test(last) ? last : null;
+    };
+
     const handleCreateList = async () => {
         if (!newListName.trim() || !user || !token) return;
+        
 
         try{
             const usuario_id = Number(user.id)
             const response = await criarLista(newListName.trim(), usuario_id, token);
+            console.log('Resposta da criação de lista:', response);
+
+            const id = Number(response.id);
+            if (!id || isNaN(id)) {
+                console.error('ID inválido ao criar lista:', response.id);
+                return;
+            }
 
             const newList: ListItem = {
                 id: Number(response.id), // use o id real do banco
@@ -93,17 +106,24 @@ export default function SidebarTaskList({ lists }: SidebarProps){
         }
     }
 
-    const handleEditListName = (id: number, newName: string) => {
-        setLocalLists(prev => prev.map(list => (list.id === id ? { ...list, name: newName } : list)));
+    async function handleEditListName(id: number, newName: string){
+        try{
+            await editarTituloLista(id, newName);
+
+            setLocalLists(prev => prev.map(list => (list.id === id ? { ...list, name: newName } : list)));
+        } catch (error) {
+            console.error("Erro ao editar título da lista:", error);
+        }
     };
 
-    const handleDeleteList = (id: number) => {
-        setLocalLists(prev => prev.filter(list => list.id !== id));
+    async function handleDeleteList(listId: number){
+        try{
+            await deletarLista(listId);
 
-        const currentListId = pathname.split('/').pop()!;
-        console.log('ID:', id, 'currentListId:', currentListId);
-        if(currentListId === String(id)) {
-            router.push(`/dashboard/today${userId ? `?usuario_id=${encodeURIComponent(userId)}` : ''}`)
+            setLocalLists(prev => prev.filter(list => list.id !== listId));
+        } catch(error) {
+            console.error('Erro ao deletar lista:', error);
+            alert('Erro ao deletar lista')
         }
     };
     
@@ -116,8 +136,8 @@ export default function SidebarTaskList({ lists }: SidebarProps){
             <nav className='text-white p-8 gap-y-3 justify-baseline'>
                 <ul>
                     <Link
-                        href={`/dashboard/Hoje`}
-                        className={`${linkBaseRouter} ${isActive('/dashboard/Hoje') ? activeRouter : hoverRouter}`}
+                        href={`/dashboard/today `}
+                        className={`${linkBaseRouter} ${isActive('/dashboard/today') ? activeRouter : hoverRouter}`}
                     >
                         <SunIcon size={24} weight='bold'/>
                         <h2 className='font-bold text-xl'>Hoje</h2>

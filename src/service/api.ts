@@ -68,7 +68,7 @@ export async function criarLista(nome: string, usuario_id: number, token: string
         },
         body: JSON.stringify({
             nome, 
-            usuario_id: Number(usuario_id),
+            usuario_id,
         }),
     });
     
@@ -80,7 +80,7 @@ export async function criarLista(nome: string, usuario_id: number, token: string
 }
 
 export async function listarListas(usuario_id: number) {
-  const res = await fetch(`${API_BASE}/select/list/task?usuario_id=${usuario_id}`, {
+  const res = await fetch(`${API_BASE}/select/list/task/${usuario_id}`, {
     method: 'GET',
     headers: authHeaders(),
   });
@@ -101,6 +101,39 @@ export async function listarListas(usuario_id: number) {
   return await res.json();
 }
 
+export async function deletarLista(id: number){
+  const token = Cookies.get('token')
+  const res = await fetch(`${API_BASE}/delete/one/list/task?lista_tarefa_id=${id}`,{
+    method: 'DELETE',
+    headers: { 
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Erro ${res.status}: ${errorText}`);
+  }
+
+  return res.json();
+}
+
+export async function editarTituloLista(lista_tarefa_id: number, nome: string){
+  const res = await fetch(`${API_BASE}/update/list/task/title`, {
+    method: 'PATCH',
+    headers: authHeaders(),
+    body: JSON.stringify({ nome, lista_tarefa_id})
+  });
+  
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Erro ${res.status}: ${errorText}`);
+  }
+
+  return res.json();
+}
+
 // Tarefas
 type Tarefa = {
   titulo: string;
@@ -117,11 +150,15 @@ export async function criarTarefa(tarefa: Tarefa) {
     headers: authHeaders(),
     body: JSON.stringify(tarefa),
   });
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Erro ${res.status}: ${errorText}`);
+  }
   return res.json();
 }
 
 export async function listarTarefas(lista_tarefa_id: number) {
-  const res = await fetch(`${API_BASE}/select/all/task?lista_tarefa_id=${lista_tarefa_id}`, {
+  const res = await fetch(`${API_BASE}/select/all/task/${lista_tarefa_id}`, {
     method: 'GET',
     headers: authHeaders(),
   });

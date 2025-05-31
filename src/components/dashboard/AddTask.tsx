@@ -19,7 +19,7 @@ export default function AddTask({ onTaskCreated }: {onTaskCreated: (t: Task) => 
             titulo: 'Task',
             descricao: '',
             data_tarefa: new Date().toISOString().split('T')[0],
-            prioridade: 'baixa',
+            prioridade: 'Baixa',
             concluida: false,
             lista_tarefa_id: listId,
         };
