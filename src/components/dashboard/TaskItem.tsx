@@ -10,6 +10,19 @@ interface TaskItemProps{
     onDelete: () => void;
 }
 
+const getPriorityColor = (priority: string) => {
+    switch (priority) {
+        case 'Alta':
+            return 'text-red-600';
+        case 'Media':
+            return 'text-yellow-400';
+        case 'Baixa':
+            return 'text-green-600'; 
+        default:
+            return 'text-gray-400';
+    }
+};
+
 export default function TaskItem({ task, onToggleCompleted, onDelete }: TaskItemProps){
     const { sidebarType, openSidebar, data } = useSidebar();
 
@@ -46,7 +59,7 @@ export default function TaskItem({ task, onToggleCompleted, onDelete }: TaskItem
             <div className="flex space-x-2 ">
                 <CircleIcon 
                     size={24}
-                    className=""
+                    className={getPriorityColor(task.prioridade)}
                 />
                 <button
                     onClick={() => openSidebar("edit-task",
